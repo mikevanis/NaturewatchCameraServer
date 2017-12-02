@@ -86,6 +86,13 @@ class CamHandler(BaseHTTPRequestHandler):
             os.system('rm /var/www/html/photos/*')
             return
 
+        if self.path.endswith('blinkLed'):
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            self.wfile.write('success')
+            changeDetectorInstance.blinkLed()
+
 
 
 # Threaded server

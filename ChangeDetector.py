@@ -5,6 +5,7 @@ from picamera import PiCamera
 from threading import Thread
 import datetime
 import time
+import serial
 import json
 import os
 
@@ -33,13 +34,16 @@ class ChangeDetector(Thread):
 
         self.mode = 0
         self.avg = None
-        self.lastPhotoTime = 0
+        self.lastTriggerTime = 0
         self.numOfPhotos = 0
 
         self.activeColour = (255, 255, 0)
         self.inactiveColour = (100, 100, 100)
         self.isMinActive = False
         self.currentImage = None
+
+        self.ser = serial.Serial("/dev/serial0")
+        self.ser.baudrate = 9600
 
         time.sleep(0.5)
 
@@ -93,14 +97,16 @@ class ChangeDetector(Thread):
             return img
 
         # otherwise, draw the rectangle
-        if time.time() - self.lastPhotoTime > self.config['min_photo_interval_s']:
+        if time.time() - self.lastTriggerTime > self.config['min_trigger_interval_s']:
             hrs = self.hiResStream.next()
             hiresImage = hrs.array
             self.hiResCapture.truncate(0)
             self.hiResCapture.seek(0)
             self.takePhoto(hiresImage)
             self.numOfPhotos = self.numOfPhotos + 1
-            self.lastPhotoTime = time.time()
+            self.lastTriggerTime = time.time()
+            # Send command to robot. Example below.
+
 
         cv2.rectangle(img, (x,y), (x+w, y+h), (0,0,255), 2)
         cv2.putText(img, "%d" % self.numOfPhotos, (10,20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2)
@@ -180,3 +186,6 @@ class ChangeDetector(Thread):
 
     def getCurrentImage(self):
         return self.currentImage
+
+    def blinkLed(self):
+        self.ser.write("test,4.500\r")

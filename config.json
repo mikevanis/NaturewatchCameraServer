@@ -9,5 +9,5 @@
     "max_height": 200,
     "less_sensitivity": 150,
     "more_sensitivity": 20,
-    "min_photo_interval_s": 1
+    "min_trigger_interval_s": 5
 }
